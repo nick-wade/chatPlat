@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add friends</title>
+    <style>@import '/styles/friends_style.css';</style>
+</head>
+<body>
+    <div class="navbar">
+
+        <a href="/index.html">Home</a>
+        <a href="/protected/chat-room.html">Chat</a>
+        <a href="/friends.html">Friends</a>
+
+        <div class="navbar-right">
+
+            <div class="dropdown">
+                <button class="dropbtn" id="loggedInAs">Placeholder
+                  <i class="fa fa-caret-down"></i>
+                </button>
+                <div class="dropdown-content">
+                  <a href="#" id="logout">Logout</a>
+                </div>
+            </div>
+            
+            <a id='login' href="/login.html">Login</a>
+            <a id='register' href="/register.html">Register</a>
+        </div>
+    </div>
+
+    <form class="form" id="form">
+        <input id="input" autocomplete="off" type="text" placeholder="Please enter a username"/>
+    </form>
+
+    <ul id="users" class="users"></ul>
+
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js';
+        import { update, getDatabase, ref, onValue, query, orderByChild, equalTo, get } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const form = document.getElementById('form');
+            const input = document.getElementById('input');
+            const loggedinas = document.getElementById('loggedInAs');
+
+            // Replace this function to get username from your backend
+            loggedinas.innerHTML = `${await fetchUsername()}`;
+
+            const firebaseConfig = {
+              apiKey: "AIzaSyDZKyuv_qI8ZZo02-uyi3qL2lOpNWjaUP0",
+              authDomain: "fir-testing01wade.firebaseapp.com",
+              projectId: "firebasetesting01wade",
+              storageBucket: "firebasetesting01wade.appspot.com",
+              messagingSenderId: "783527173299",
+              appId: "1:783527173299:web:5d4c9f97d86d5bdda064c6",
+              databaseURL: "https://firebasetesting01wade-default-rtdb.asia-southeast1.firebasedatabase.app"
+            };
+
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const db = getDatabase(app);
+
+            async function fetchUsername() {
+                const response = await fetch('/username');
+                const data = await response.json();
+                return data.username;
+            }
+
+            async function sendRequest(recipientUsername) {
+                const senderUsername = await fetchUsername(); // Fetch the current logged-in user's username
+                const status = 'pending';
+
+                if (!recipientUsername || !senderUsername) {
+                    console.error('Invalid data for friend request');
+                    return;
+                }
+
+                const requestData = { senderUsername, recipientUsername, status };
+
+                try {
+                    const response = await fetch('/sendDM', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(requestData)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to send friend request');
+                    }
+
+                    const result = await response.json();
+                    console.log(result.message);
+                } catch (error) {
+                    console.error('Error sending request:', error);
+                }
+            }
+
+
+            // Function to search the database for a username
+            async function searchUsername(username) {
+                const usersRef = ref(db, 'users');
+                const usernameQuery = query(usersRef, orderByChild('username'), equalTo(username));
+
+                // Use once instead of onValue to avoid multiple triggers
+                const snapshot = await get(usernameQuery);
+
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    const keys = Object.keys(userData);
+                    form.style.backgroundColor = 'rgba(2, 192, 2, 0.498)';
+                    input.classList.remove('placeholderWrong');
+                    input.classList.add('placeholderRight');
+                    input.placeholder = `User found. Send friend request to: ${userData[keys[0]].username}`;
+
+                    // Only send the request after confirming the user exists
+                    sendRequest(userData[keys[0]].username);
+
+                } else {
+                    form.style.backgroundColor = 'rgba(255, 0, 0, 0.615)';
+                    input.classList.remove('placeholderRight');
+                    input.classList.add('placeholderWrong');
+                    input.placeholder = `User not found.`;
+                }
+            }
+
+
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const inputVal = input.value.trim();
+                if (inputVal) {
+                    searchUsername(inputVal);
+                } else {
+                    searchResult.innerText = 'Please enter a username.';
+                }
+                input.value = '';  // Clear the input field
+            });
+        });
+    </script>
+</body>
+</html>

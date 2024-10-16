@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <style>@import "/styles/login_style.css";</style>
+</head>
+<body>
+
+    <div class="topnav">
+        <a href="/index.html">Home</a>
+        <a href="/protected/chat-room.html">Chat</a>
+        <a href="/friends.html">Friends</a>
+
+        <div class="topnav-right">
+            <a href="/login.html">Login</a>
+            <a class="active" href="/register.html">Register</a>
+            
+        </div>
+    </div>
+
+
+    <div class="text-box">
+        <div class="front-text">
+        <h1>Register</h1>
+    </div>
+        <div class="register-forms">
+            <form class="usernameRegister" id="uRegister">
+                <label for="registerUsername">Please enter your username</label><br>
+                <input type='text' id='registerUsername' name="register-username">
+            </form>
+
+            <form class="passwordRegister" id="uPassword">
+                <label for="registerPassword">Please enter your password</label><br>
+                <input type="text" id="registerPassword" name="register-password">
+            </form>
+            <button id="submitRegister">Register</button>
+        </div>
+    </div>
+
+    <script src="/scripts/register.js"></script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style type="text/css">@import "/styles/login_style.css";</style>
+</head>
+<body>
+
+    <div class="topnav">
+        <a href="/index.html">Home</a>
+        <a href="/protected/chat-room.html">Chat</a>
+        <a href="/friends.html">Friends</a>
+
+        <div class="topnav-right">
+            <a class="active" href="/login.html">Login</a>
+
+            <a href="/register.html">Register</a>
+
+        </div>
+    </div>
+
+
+    
+    <div class="text-box">
+        <div class="front-text">
+            <h1>Login</h1> 
+        </div>
+    
+        <div class="login-forms" id="loginform">
+            <form class="username-login">
+                <label id='uEntry'for="loginUsername">Please enter your username</label><br>
+                <input type='text' id='loginUsername' name="login-username">
+            </form>
+    
+            <form class="password-login" id="loginform">
+                <label id='pEntry' for="loginPassword">Please enter your password</label><br>
+                <input type="password" id="loginPassword" name="login-password">
+            </form><br>
+            <button id="loginButton">Login</button>
+            <br><br>
+            Or
+            <br><br>
+            <a href="/register.html">Create an account</a>
+        </div>
+    </div>
+
+    <script src="/scripts/login.js" type="text/javascript"></script>
+</body>
+</html>

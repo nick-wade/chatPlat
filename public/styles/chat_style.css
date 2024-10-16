@@ -1,0 +1,175 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+.hidden {
+  display: none;
+}
+
+.above-form-content {
+  background-color: #efefef;
+  padding: 0.05rem;
+  position: fixed;
+  bottom: 3rem; /* Position it just above the form */
+  left: 0;
+  right: 0;
+  z-index: 1000; /* Keep it above the other elements */
+  text-align: center;
+  border-top: 1px solid #ccc;
+  box-sizing: border-box;
+  display: none; /* Hidden initially */
+}
+
+#form {
+  background: rgba(0, 0, 0, 0.15);
+  padding: 0.25rem;
+  position: fixed; /* Fix the form to the bottom */
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  height: 3rem;
+  box-sizing: border-box;
+  z-index: 1000; /* Keep form above other elements */
+}
+#input { 
+    border: none; 
+    padding: 0 1rem; 
+    flex-grow: 1; 
+    border-radius: 2rem; 
+    margin: 0.25rem; 
+}
+
+#input:focus { 
+    outline: none; 
+}
+
+#form > button { 
+    background: #333; 
+    border: none; 
+    padding: 0 1rem; 
+    margin: 0.25rem; 
+    border-radius: 3px; 
+    outline: none; 
+    color: #fff; 
+}
+
+#form > img{
+  margin: 0.25rem; 
+  width: 10;
+  border-radius: 100px;
+  border-spacing: 3px;
+  padding: 3px;
+  float:left,
+  
+}
+#form > img:hover{
+  background-color: #aaaaaa;
+}
+
+#messages {
+  list-style-type: none;
+  margin-top: 50px; /* Give space for the fixed navbar */
+  padding: 0;
+  max-height: calc(100vh - 6rem); /* Adjust height for navbar and form */
+  overflow-y: auto;
+  padding: 0.5rem 1rem;
+  position:absolute;
+  bottom:3rem
+}
+  
+  #messages > li {
+    padding: 0.5rem 1rem;
+  }
+  
+  #messages > li:nth-child(odd) {
+    background: #efefef;
+  }
+  #messages > li:hover{
+    background: #aaaaaa;
+  }
+  #messages > li:hover span{
+    color:#000000 !important;
+  }
+
+/* Navbar container */
+.navbar {
+  position: fixed; /* Fix the navbar to the top */
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%; /* Ensure it spans the entire width */
+  background-color: #333;
+  font-family: Arial;
+  z-index: 1000; /* Ensure it stays on top of other elements */
+  display: flex; /* Ensure child elements (links and dropdowns) are inline */
+}
+  
+  /* Links inside the navbar */
+  .navbar a {
+    float: left;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+  }
+  
+  /* The dropdown container */
+  .dropdown {
+    overflow: hidden;
+    font-family: inherit;
+  }
+  
+  /* Dropdown button */
+  .dropdown .dropbtn {
+    border: none;
+    outline: none;
+    color: white;
+    padding: 14px 16px;
+    background-color: inherit;
+    font-family: inherit; /* Important for vertical align on mobile phones */
+    margin: 0; /* Important for vertical align on mobile phones */
+    font-size: inherit;
+  }
+  
+  /* Add a red background color to navbar links on hover */
+  .navbar a:hover, .dropdown:hover .dropbtn {
+    background-color: #ddd;
+  }
+  
+  /* Dropdown content (hidden by default) */
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  
+  /* Links inside the dropdown */
+  .dropdown-content a {
+    float: none;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+  }
+  .navbar-right{
+    float: right;
+  }
+
+
+  /* Add a grey background color to dropdown links on hover */
+  .dropdown-content a:hover {
+    background-color: #ddd;
+  }
+  
+  /* Show the dropdown menu on hover */
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }

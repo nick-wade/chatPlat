@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Chat</title>
+    <style>@import "/styles/chat_style.css";</style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/index.html">Home</a>
+        <a class="active" href="/protected/chat-room.html">Chat</a>
+        <a href="/friends.html">Friends</a>
+
+        
+        <div class="navbar-right">
+            <div class="dropdown">
+                <button class="dropbtn" id="loggedInAs">Placeholder
+                  <i class="fa fa-caret-down"></i>
+                </button>
+                <div class="dropdown-content">
+                  <a href="#" id="logout">Logout</a>
+                </div>
+              </div>
+        </div>
+    </div>
+
+    <ul id="messages" class="messages"></ul>
+
+    <div class="above-form-content hidden" id="reply-context">
+        <span id="replyingTo" style="float: left;">Replying to:</span>
+        <button id="cancelReply" style="float: right;">Cancel</button>
+    </div>
+
+    <form id="form">
+        <img src="/images/paperclip.png" id='attach' class='attach' title="attach">
+        <label for="input"></label>
+        <input id="input" autocomplete="off" type="text"/>
+        <button type="button" id="buttonsend">Send</button>
+    </form>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js';
+        import { getDatabase, ref, onChildAdded, push } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js';
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-storage.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const loggedinas = document.getElementById('loggedInAs');
+            const input = document.getElementById('input');
+            const button = document.getElementById('buttonsend');
+            const messagesContainer = document.getElementById('messages');
+            const attachbtn = document.getElementById('attach');
+            const replyContext = document.getElementById('reply-context');
+            const replyingToElement = document.getElementById('replyingTo');
+            const cancelReplyButton = document.getElementById('cancelReply');
+            let reply;
+            const firebaseConfig = {
+              apiKey: "AIzaSyDZKyuv_qI8ZZo02-uyi3qL2lOpNWjaUP0",
+              authDomain: "fir-testing01wade.firebaseapp.com",
+              projectId: "firebasetesting01wade",
+              storageBucket: "firebasetesting01wade.appspot.com",
+              messagingSenderId: "783527173299",
+              appId: "1:783527173299:web:5d4c9f97d86d5bdda064c6",
+              databaseURL: "https://firebasetesting01wade-default-rtdb.asia-southeast1.firebasedatabase.app",
+              storageBucket: 'gs://firebasetesting01wade.appspot.com'
+            };
+            
+            const app = initializeApp(firebaseConfig);
+            const db = getDatabase(app);
+            const storage = getStorage(app);
+
+            const chime = new Audio('/audio/bell_sfx.wav');
+            chime.volume=0.1; // IF YOU'RE READING THIS DO NOT FUCK WITH THIS. I THINK I JUST GOT TINNITUS.
+
+
+            loggedinas.innerHTML = `Logged in as: ${await fetchUsername()}`;
+
+
+            let replyingTo = null;
+
+            async function fetchUsername() {
+                const response = await fetch('/username');
+                const data = await response.json();
+                return data.username;
+            }
+
+
+            function scrollToBottom() {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                chime.play();
+
+            }
+
+            const messagesRef = ref(db, 'messages');
+            
+            onChildAdded(messagesRef, (snapshot) => {
+
+                const message = snapshot.val();
+                const messageId = snapshot.key;
+                
+                if (message) {
+                    
+
+                    const messageElement = document.createElement('li');
+                    messageElement.id = `message-${messageId}`;
+
+                    const contentElement = document.createElement('div');
+                    const usernameElement = document.createElement('span');
+                    usernameElement.textContent = `${message.username}`;
+                    usernameElement.style.fontWeight = 'bold';
+
+                    const timeElement = document.createElement('span');
+                    timeElement.textContent = ` (${message.tstringtime} ${message.tstringdate})`;
+                    timeElement.style.fontSize = '0.85em';
+                    timeElement.style.color = '#888';
+
+                    const replyElement = document.createElement('span');
+                    replyElement.textContent = `    Replying to: ${message.replyTo}: ${message.replyText}`
+                    replyElement.style.fontSize = '0.85em';
+                    replyElement.style.color = '#5e9c52';
+                    replyElement.href = `#message-${message.replyToId}`
+
+
+                    if (message.imageUrl && message.replyTo) {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = message.imageUrl;
+                        imgElement.style.maxWidth = '300px';
+                        contentElement.appendChild(usernameElement);
+                        contentElement.appendChild(replyElement)
+                        contentElement.appendChild(timeElement);
+                        contentElement.appendChild(document.createElement('br'));
+                        contentElement.appendChild(imgElement);
+                    }else if (message.replyTo) {
+                        const textElement = document.createElement('div');
+                        textElement.textContent = message.text;
+                        contentElement.appendChild(usernameElement);
+                        contentElement.appendChild(replyElement)
+                        contentElement.appendChild(timeElement);
+                        contentElement.appendChild(document.createElement('br'));
+                        contentElement.appendChild(textElement);
+                    }else if (message.imageUrl){
+                        const imgElement = document.createElement('img');
+                        imgElement.src = message.imageUrl;
+                        imgElement.style.maxWidth = '300px';
+                        contentElement.appendChild(usernameElement);
+                        contentElement.appendChild(timeElement);
+                        contentElement.appendChild(document.createElement('br'));
+                        contentElement.appendChild(imgElement);
+                    }else{
+                        const textElement = document.createElement('div');
+                        textElement.textContent = message.text;
+                        contentElement.appendChild(usernameElement);
+                        contentElement.appendChild(timeElement);
+                        contentElement.appendChild(document.createElement('br'));
+                        contentElement.appendChild(textElement);
+                    }
+
+                    messageElement.addEventListener('dblclick', () => {
+                        replyingTo = message;
+                        console.log('replying to', replyingTo.username)
+                        replyingToElement.textContent = `Replying to: ${message.username}: ${message.text || 'Image'}`;
+                        replyContext.style.display = 'block';
+                        reply = true;
+                    });
+
+                    cancelReplyButton.addEventListener('click', () => {
+                        replyingTo = null;
+                        replyContext.style.display = 'none';
+                        replyingToElement.textContent = '';
+                        reply = false;
+                    });
+
+                    messageElement.appendChild(contentElement);
+                    messagesContainer.appendChild(messageElement);
+                    scrollToBottom();
+                }
+            });
+
+
+            async function handleSubmit(username, text = null, imageUrl = null) {
+                // TIME
+                const d = new Date();
+                let day = String(d.getDate()).padStart(2, '0');
+                let month = String(d.getMonth() + 1).padStart(2, '0');
+                let year = d.getFullYear();
+                let minutes = String(d.getMinutes()).padStart(2, '0');
+                let hour = d.getHours();
+                let AmOrPm = hour >= 12 ? 'pm' : 'am';
+                hour = hour % 12 || 12;
+
+                const tstringtime = `${hour}:${minutes} ${AmOrPm}`;
+                const tstringdate = `${day}/${month}/${year}`;
+
+                let replyTo = null;
+                let replyText = null;
+
+                if (replyingTo) {
+                    replyTo = replyingTo.username;
+                    replyText = replyingTo.text || "Image";
+                }
+
+                const newMessage = {
+                    tstringdate,
+                    tstringtime,
+                    text,
+                    replyTo,
+                    replyText,
+                    imageUrl,
+                    username
+                };
+
+                await push(messagesRef, newMessage);
+                replyingTo = null;
+                replyContext.style.display = 'none';
+            };
+
+            const username = await fetchUsername();
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault(); // Prevent default form submission behavior
+                const inputValue = input.value;
+                if (inputValue !== "") {
+                    handleSubmit(username, inputValue); // Trigger your message submission
+                    input.value = '';
+                }
+            });
+
+
+            button.addEventListener('click', () => {
+                const inputValue = input.value;
+                if (inputValue !== "") {
+                    handleSubmit(username, inputValue);
+                    input.value = '';
+
+                }
+            }); 
+            
+            document.getElementById('logout').addEventListener('click', async () => {
+                const response = await fetch('/logout', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+
+                if (response.ok) {
+                    // Redirect to login page or update UI accordingly
+                    window.location.href = '/public/login.html';
+                } else {
+                    console.error('Failed to logout');
+                }
+            })
+
+            attachbtn.addEventListener('click', () => {
+                const inputElement = document.createElement('input');
+                inputElement.type = 'file';
+                inputElement.accept = 'image/*'; // Ensure only images are selected
+                inputElement.onchange = async (event) => {
+                    const file = event.target.files[0];
+                    const storageReference = storageRef(storage, `images/${file.name}`);
+                    await uploadBytes(storageReference, file);
+                    const downloadUrl = await getDownloadURL(storageReference);
+                    handleSubmit(username, null, downloadUrl);
+                };
+                inputElement.click();
+            });
+
+        });
+    </script>
+</body>
+</html>
